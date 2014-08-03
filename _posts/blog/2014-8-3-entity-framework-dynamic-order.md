@@ -7,35 +7,26 @@ title: Entity Framework 动态排序
 ## 背景
 在EF中, 需要对查询结果排序时, 我们可以如下操作:
 
-<pre>
-var q = from it in dc.StudentInfo
-	orderby it.name, it.type
-	select it;
-</pre>
+	var q = from it in dc.StudentInfo
+		orderby it.name, it.type
+		select it;
 
 或者是:
 
-<code>
-
 	var q = dc.StudentInfo.OrderBy(it => it.name).ThenBy(it => it.type);
-</code>
 
 这是常规的情况, 但是很多时候, 我们需要在不确定排序字段的名字/类型/数目的情况下给查询排序.
 例如表格中, 我们允许用户通过点击表头的标题栏给结果自定义排序.
 我们希望能够有类似如下的操作:
 
-<code>
-
 	var sortField = textBox.Text;
 	var q = dc.StudentInfo.OrderBy(sortField);
-</code>
 
 但是EF并不允许直接通过字符串列名进行排序. 
 之后通过网上搜索, 查询, 以及自己的尝试, 做出了大致的解决方案.
 
 ## 准备
 测试环境是 .NET 4.0 控制台程序 + Entity Framework 6 (Code First) + SQL Server
-<code>
 
 	public class BlogContext : DbContext
     {
@@ -48,14 +39,11 @@ var q = from it in dc.StudentInfo
         public string Name { get; set; }
         public int Height { get; set; }
     }
-</code>
 
 1个简单的 Context 类和 StudentInfo (string类型的Name 和 int类型的 Height)作为模型.
 
 ## 前奏
 略去楼主 google 的辛苦过程, 先上一段简短的代码.
-
-<code>
 
 	static void Main(string[] args)
 	{
@@ -83,7 +71,6 @@ var q = from it in dc.StudentInfo
     [Extent1].[Height] AS [Height]
     FROM [dbo].[StudentInfoes] AS [Extent1]
     ORDER BY [Extent1].[Name] ASC
-</code>
 
 这段代码, 核心在于 `param` `body` `lambda` 3个变量组成了1个动态的 `o => o.Name` 表达式. 其作为 OrderBy的参数, 实现"Name"的排序.
 底下输出的SQL告诉我们, 它已经很好的完成自己的任务(按照Name排序), 之后我们的修改都将在此基础上进行.
@@ -99,8 +86,6 @@ var q = from it in dc.StudentInfo
 最终解决方案是使用 第2种处理 配合 反射机制调用OrderBy, 用反射来调用OrderBy是因为反射能够跳过编译时的类型检查, 让代码能够正常编译.
 
 以下是新的代码
-
-<code>
 
 	static void Main(string[] args)
 	{
@@ -132,7 +117,6 @@ var q = from it in dc.StudentInfo
     [Extent1].[Height] AS [Height]
     FROM [dbo].[StudentInfoes] AS [Extent1]
     ORDER BY [Extent1].[Name] ASC
-</code>
 
 和第一版的 代码改变在于:
 
@@ -146,8 +130,6 @@ var q = from it in dc.StudentInfo
 ## 结尾
 
 方案已经能够工作, 但我们还需要更加简洁. 类似于以下:
-
-<code>
 	
 	var query = from it from dc.StudentInfo;
 				select it;
@@ -157,7 +139,6 @@ var q = from it in dc.StudentInfo
 		new OrderingRule("Height", OrderingRuleType.Desc)};
 
 	query.ApplyOrdering(rules); // 
-</code>
 
 这还需要更多的封装, 涉及到很多的细节. 例如`OrderBy` 和 `ThenBy`, 以及 各自的正序和倒序(一共4个方法, 还有4个重载). 因为它们都是泛型静态方法, 我找了很久都没有找到简单的反射方法. 只能够遍历`Queryable`所有的方法通过 方法名和参数个数筛选出来. 如果有朋友们知道更好的方法可以告诉我~
 
@@ -166,7 +147,7 @@ var q = from it in dc.StudentInfo
 整体代码请访问 [https://github.com/huisama/EntityFrameworkDynamicOrder](https://github.com/huisama/EntityFrameworkDynamicOrder)
 里面包含一个 DynamicOrder类, 以及示例代码. 
 
-这是我第一次使用 git和写博客, 评论和联系方式会随后加上~
+这是我第一次使用Git和写博客, 评论和联系方式会随后加上~
 
 ---
 ### 2014-8-3
