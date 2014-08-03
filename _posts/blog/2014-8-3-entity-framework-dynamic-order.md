@@ -8,6 +8,7 @@ title: Entity Framework 动态排序
 在EF中, 需要对查询结果排序时, 我们可以如下操作:
 
 <code>
+
 	var q = from it in dc.StudentInfo
 			orderby it.name, it.type
 			select it;
@@ -16,6 +17,7 @@ title: Entity Framework 动态排序
 或者是:
 
 <code>
+
 	var q = dc.StudentInfo.OrderBy(it => it.name).ThenBy(it => it.type);
 </code>
 
@@ -24,6 +26,7 @@ title: Entity Framework 动态排序
 我们希望能够有类似如下的操作:
 
 <code>
+
 	var sortField = textBox.Text;
 	var q = dc.StudentInfo.OrderBy(sortField);
 </code>
@@ -34,6 +37,7 @@ title: Entity Framework 动态排序
 ## 准备
 测试环境是 .NET 4.0 控制台程序 + Entity Framework 6 (Code First) + SQL Server
 <code>
+
 	public class BlogContext : DbContext
     {
         public virtual DbSet<StudentInfo> StudentInfo { get; set; }
