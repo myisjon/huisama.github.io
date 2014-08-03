@@ -7,12 +7,11 @@ title: Entity Framework 动态排序
 ## 背景
 在EF中, 需要对查询结果排序时, 我们可以如下操作:
 
-<code>
-
-	var q = from it in dc.StudentInfo
-			orderby it.name, it.type
-			select it;
-</code>
+<pre>
+var q = from it in dc.StudentInfo
+	orderby it.name, it.type
+	select it;
+</pre>
 
 或者是:
 
